@@ -52,7 +52,7 @@ export default function BuilderPage() {
     console.log("Final resume data:", resumeData);
 
     try {
-      await fetch("http://localhost:8080/api/resume", {
+      await fetch("http://localhost:2222/resume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(resumeData)
@@ -67,44 +67,92 @@ export default function BuilderPage() {
   const CurrentStepComponent = steps[currentStep - 1].component;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Toast toast={toast} />
-      <ProgressBar currentStep={currentStep} totalSteps={steps.length} />
-
-      <div className="my-8">
-        <CurrentStepComponent />
-      </div>
-
-      <div className="flex justify-between items-center mt-8">
-        <div>
-          {currentStep > 1 && (
-            <button
-              type="button"
-              onClick={prevStep}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" /> Previous Step
-            </button>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <Toast toast={toast} />
+        
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            Build Your Resume
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Create a professional resume that stands out. Follow our step-by-step process to showcase your skills and experience.
+          </p>
         </div>
-        <div>
-          {currentStep < steps.length ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Next Step <ArrowRight className="h-4 w-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Finish & Save <Check className="h-4 w-4" />
-            </button>
-          )}
+
+        {/* Step Indicator */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Step {currentStep}: {steps[currentStep - 1].name}
+            </h2>
+            <span className="text-sm font-medium text-gray-500 bg-gray-200 px-3 py-1 rounded-full">
+              {currentStep} of {steps.length}
+            </span>
+          </div>
+          <ProgressBar currentStep={currentStep} totalSteps={steps.length} />
+        </div>
+
+        {/* Main Content Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden mb-8 transition-all duration-300 hover:shadow-2xl">
+          <div className="p-8 lg:p-12">
+            <div className="transform transition-all duration-500 ease-in-out">
+              <CurrentStepComponent />
+            </div>
+          </div>
+          
+          {/* Card Footer with Navigation */}
+          <div className="bg-gray-50 border-t border-gray-200 px-8 py-6">
+            <div className="flex justify-between items-center">
+              <div>
+                {currentStep > 1 && (
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    className="group flex items-center gap-3 px-6 py-3 border-2 border-gray-300 rounded-xl hover:border-gray-400 hover:bg-white transition-all duration-200 font-medium text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                  >
+                    <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+                    Previous Step
+                  </button>
+                )}
+              </div>
+              
+              <div>
+                {currentStep < steps.length ? (
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="group flex items-center gap-3 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-200"
+                  >
+                    Next Step
+                    <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    className="group flex items-center gap-3 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-green-200"
+                  >
+                    Finish & Save
+                    <Check className="h-5 w-5 transition-transform group-hover:scale-110" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress Summary */}
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 text-sm text-gray-500 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
+            <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+            {currentStep === steps.length ? (
+              "Ready to complete your resume"
+            ) : (
+              `${steps.length - currentStep} ${steps.length - currentStep === 1 ? 'step' : 'steps'} remaining`
+            )}
+          </div>
         </div>
       </div>
     </div>

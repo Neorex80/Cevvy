@@ -7,6 +7,8 @@ import Pricing from "./components/Pricing";
 import DashboardPage from "./pages/DashboardPage";
 import BuilderPage from "./pages/BuilderPage";
 import LoginPage from "./components/LoginPage";
+import ContactPage from "./pages/ContactPage";
+import AboutPage from "./pages/AboutPage";
 import RegisterPage from "./components/RegisterPage";
 
 export default function App() {
@@ -27,9 +29,11 @@ export default function App() {
               }
             />
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/builder" element={<BuilderPage />} />
+            <Route path="/build" element={<BuilderPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
           </Routes>
         </main>
         <Footer />
