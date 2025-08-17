@@ -1,67 +1,73 @@
-import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { updatePersonal } from "../../store/resumeSlice";
 
-export default function PersonalInfoStep({ data, onChange, errors }) {
+export default function PersonalInfoStep() {
+  const personal = useSelector((state) => state.resume.personal);
+  const dispatch = useDispatch();
+
+  const handleChange = (field, value) => {
+    dispatch(updatePersonal({ [field]: value }));
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Personal Information</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Full Name</label>
-          <input
-            type="text"
-            value={data.fullName || ""}
-            onChange={(e) => onChange("fullName", e.target.value)}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="John Doe"
-          />
-          {errors.fullName && (
-            <span className="text-red-500 text-sm">{errors.fullName}</span>
-          )}
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Email</label>
-          <input
-            type="email"
-            value={data.email || ""}
-            onChange={(e) => onChange("email", e.target.value)}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="john@example.com"
-          />
-          {errors.email && (
-            <span className="text-red-500 text-sm">{errors.email}</span>
-          )}
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Phone Number</label>
-          <input
-            type="tel"
-            value={data.phoneNumber || ""}
-            onChange={(e) => onChange("phoneNumber", e.target.value)}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="+1 (555) 123-4567"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">LinkedIn</label>
-          <input
-            type="url"
-            value={data.linkedin || ""}
-            onChange={(e) => onChange("linkedin", e.target.value)}
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="linkedin.com/in/johndoe"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1">Address</label>
-        <textarea
-          value={data.address || ""}
-          onChange={(e) => onChange("address", e.target.value)}
-          className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="123 Main St, City, State 12345"
-          rows={2}
-        />
-      </div>
+      <h2 className="text-xl font-bold">Personal Information</h2>
+      <input
+        type="text"
+        placeholder="Full Name"
+        value={personal.fullname}
+        onChange={(e) => handleChange("fullname", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="text"
+        placeholder="Phone Number"
+        value={personal.number}
+        onChange={(e) => handleChange("number", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="email"
+        placeholder="Email"
+        value={personal.email}
+        onChange={(e) => handleChange("email", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="url"
+        placeholder="Portfolio Website"
+        value={personal.web_url}
+        onChange={(e) => handleChange("web_url", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="text"
+        placeholder="LinkedIn Username"
+        value={personal.linkedin_name}
+        onChange={(e) => handleChange("linkedin_name", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="url"
+        placeholder="LinkedIn URL"
+        value={personal.linkedin_url}
+        onChange={(e) => handleChange("linkedin_url", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="text"
+        placeholder="GitHub Username"
+        value={personal.github_name}
+        onChange={(e) => handleChange("github_name", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
+      <input
+        type="url"
+        placeholder="GitHub URL"
+        value={personal.github_url}
+        onChange={(e) => handleChange("github_url", e.target.value)}
+        className="w-full border p-2 rounded"
+      />
     </div>
   );
 }
