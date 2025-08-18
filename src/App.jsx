@@ -2,14 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Hero from "./components/Hero";
-import Features from "./components/Features";
-import Pricing from "./components/Pricing";
-import DashboardPage from "./pages/DashboardPage";
 import BuilderPage from "./pages/BuilderPage";
-import LoginPage from "./components/LoginPage";
-import ContactPage from "./pages/ContactPage";
+import LoginPage from "./pages/LoginPage";
 import AboutPage from "./pages/AboutPage";
-import RegisterPage from "./components/RegisterPage";
+import RegisterPage from "./pages/RegisterPage";
+import Features from "./components/Features";
 
 export default function App() {
   return (
@@ -24,16 +21,13 @@ export default function App() {
                 <>
                   <Hero />
                   <Features />
-                  <Pricing />
                 </>
               }
             />
-            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/build" element={<BuilderPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/contact" element={<ContactPage />} />
           </Routes>
         </main>
         <Footer />
