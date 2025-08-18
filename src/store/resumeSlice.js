@@ -3,13 +3,14 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   personal: {
     fullname: "",
-    number: "",
+    phone: "",
     email: "",
-    web_url: "",
+    website: "",
     linkedin_name: "",
     linkedin_url: "",
     github_name: "",
-    github_url: ""
+    github_url: "",
+    address: "",
   },
   education: { educations: [] },
   experience: { experiences: [] },
@@ -23,7 +24,10 @@ const resumeSlice = createSlice({
   initialState,
   reducers: {
     updatePersonal(state, action) {
-      state.personal = { ...state.personal, ...action.payload };
+      state.personal = {
+        ...state.personal,
+        ...action.payload
+      };
     },
     addEducation(state, action) {
       state.education.educations.push(action.payload);
@@ -38,9 +42,6 @@ const resumeSlice = createSlice({
       state.skills.categories.push(action.payload);
     },
     addCertification(state, action) {
-      if (!state.certifications.certifications) {
-        state.certifications.certifications = [];
-      }
       state.certifications.certifications.push(action.payload);
     }
   }

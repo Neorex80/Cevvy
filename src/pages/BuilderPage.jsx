@@ -27,42 +27,95 @@ export default function BuilderPage() {
 
   const resumeData = useSelector((state) => state.resume);
 
-  const showToast = (title, description, variant = "default") => {
-    setToast({ title, description, variant });
-    setTimeout(() => setToast(null), 3000);
-  };
-
   const validateStep = () => {
-    // (optional) add validation rules
-    return true;
-  };
+  if (currentStep === 1) {
+    const { fullname, email, phone } = resumeData.personal;
 
-  const nextStep = () => {
-    if (validateStep()) {
-      if (currentStep < steps.length) setCurrentStep((prev) => prev + 1);
-      else handleSubmit();
+    if (!fullname || !email || !phone) {
+      setToast({
+        title: "Missing required fields",
+        description: "Full name, email, and phone number are required."
+      });
+      return false;
     }
-  };
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setToast({
+        title: "Invalid email format",
+        description: "Please enter a valid email address."
+      });
+      return false;
+    }
+  }
+
+  if (currentStep === 2) {
+    if (!resumeData.education.educations.length) {
+      setToast({
+        title: "No education added",
+        description: "Please add at least one education entry."
+      });
+      return false;
+    }
+
+    for (const edu of resumeData.education.educations) {
+      if (!edu.institution || !edu.degree || !edu.startDate) {
+        setToast({
+          title: "Incomplete education details",
+          description: "Institution, degree, and start date are required for education."
+        });
+        return false;
+      }
+    }
+  }
+  return true;
+};
+  const nextStep = () => {
+  if (!validateStep()) return;
+  if (currentStep < steps.length) setCurrentStep(prev => prev + 1);
+  else handleSubmit();
+};
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
   };
 
-  const handleSubmit = async () => {
-    console.log("Final resume data:", resumeData);
+const handleSubmit = async (resumeData) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    setToast({
+      title: "Authentication required",
+      description: "You must log in before submitting your resume."
+    });
+    return;
+  }
 
-    try {
-      await fetch("http://localhost:2222/resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resumeData)
-      });
-      showToast("Resume Complete!", "Your resume has been saved successfully.", "success");
-    } catch (err) {
-      showToast("Error", "Failed to save resume. Try again.", "error");
-      console.error("Error saving resume:", err);
+  try {
+    const res = await fetch(`http://localhost:2222/resume`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(resumeData)
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to submit resume");
     }
-  };
+
+    setToast({
+      title: "Success!",
+      description: "Your resume has been submitted."
+    });
+  } catch (err) {
+    setToast({
+      title: "Error",
+      description: err.message
+    });
+  }
+};
+
 
   const CurrentStepComponent = steps[currentStep - 1].component;
 
