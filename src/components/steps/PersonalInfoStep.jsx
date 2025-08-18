@@ -1,82 +1,70 @@
 import React from 'react';
+import { useSelector, useDispatch } from "react-redux";
+import { updatePersonal } from "../../store/resumeSlice";
 import { User, Phone, Mail, Globe, Github, Linkedin, MapPin } from 'lucide-react';
 
 export default function PersonalInfoStep() {
-  const [formData, setFormData] = React.useState({
-    fullname: "",
-    phone: "",
-    email: "",
-    website: "",
-    linkedin_name: "",
-    linkedin_url: "",
-    github_name: "",
-    github_url: "",
-    address: ""
-  });
+  const personal = useSelector((state) => state.resume.personal);
+  const dispatch = useDispatch();
+  
+  // ✅ Use local state for immediate typing response
+  const [localPersonal, setLocalPersonal] = React.useState(personal);
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [id]: value }));
+  // ✅ Update local state when Redux state changes (but not during typing)
+  React.useEffect(() => {
+    setLocalPersonal(personal);
+  }, [personal]);
+
+  // ✅ Handle typing - update local state immediately
+  const handleChange = (field, value) => {
+    setLocalPersonal(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
+  // ✅ Handle blur - update Redux when user finishes typing
+  const handleBlur = (field, value) => {
+    dispatch(updatePersonal({ [field]: value }));
+  };
 
-  const InputField = ({ id, label, type, value, onChange, required, placeholder }) => (
-  <div>
-    <label
-      htmlFor={id}
-      className="block text-sm font-semibold text-neutral-800 mb-2 transition-colors duration-200 group-focus-within:text-neutral-900"
-    >
-      {label}
-    </label>
-    <input
-      id={id}
-      type={type}
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      required={required}
-     className="w-full border border-gray-300 p-3 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400 hover:border-gray-400 bg-white shadow-sm placeholder:text-gray-400 text-neutral-800"
-    />
-  </div>
-);
-
-
-  // const InputField = ({ 
-  //   label, 
-  //   type = "text", 
-  //   placeholder, 
-  //   value, 
-  //   field, 
-  //   icon: Icon,
-  //   required = true,
-  // }) => (
-  //   <div className="group">
-  //     <label
-  //       className="block text-sm font-semibold text-neutral-800 mb-2 transition-colors duration-200 group-focus-within:text-neutral-900"
-  //       htmlFor={field}
-  //     >
-  //       <div className="flex items-center gap-2">
-  //         {Icon && <Icon className="w-4 h-4 text-neutral-600" />}
-  //         {label}
-  //         {required && <span className="text-red-500 text-xs">*</span>}
-  //       </div>
-  //     </label>
-  //     <div className="relative">
-  //       <input
-  //         id={field}
-  //         type={type}
-  //         placeholder={placeholder}
-  //         value={value}
-  //         required={required}
-  //         onChange={handleChange(field)}
-  //         className="w-full border border-gray-300 p-3 rounded-lg transition-all duration-200 
-  //                  focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400
-  //                  hover:border-gray-400 bg-white shadow-sm
-  //                  placeholder:text-gray-400 text-neutral-800"
-  //       />
-  //     </div>
-  //   </div>
-  // );
+  const InputField = ({ 
+    label, 
+    type = "text", 
+    placeholder, 
+    value, 
+    field, 
+    icon: Icon,
+    required = true,
+  }) => (
+    <div className="group">
+      <label
+        className="block text-sm font-semibold text-neutral-800 mb-2 transition-colors duration-200 group-focus-within:text-neutral-900"
+        htmlFor={field}
+      >
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="w-4 h-4 text-neutral-600" />}
+          {label}
+          {required && <span className="text-red-500 text-xs">*</span>}
+        </div>
+      </label>
+      <div className="relative">
+        <input
+          id={field}
+          type={type}
+          placeholder={placeholder}
+          value={value || ''} 
+          required={required}
+          onChange={(e) => handleChange(field, e.target.value)}
+          onBlur={(e) => handleBlur(field, e.target.value)}
+          className="w-full border border-gray-300 p-3 rounded-lg transition-all duration-200 
+                   focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400
+                   hover:border-gray-400 bg-white shadow-sm
+                   placeholder:text-gray-400 text-neutral-800"
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -105,20 +93,18 @@ export default function PersonalInfoStep() {
           </div>
 
           <InputField
-            id="fullname"
             label="Full Name"
             placeholder="John Doe"
-            value={formData.fullname}
+            value={localPersonal.fullname}
             field="fullname"
-            // icon={User}
-            onChange={handleInputChange}
+            icon={User}
           />
 
           <InputField
             label="Phone Number"
             type="tel"
             placeholder="(123) 456-7890"
-            value={formData.phone}
+            value={localPersonal.phone}
             field="phone"
             icon={Phone}
           />
@@ -127,7 +113,7 @@ export default function PersonalInfoStep() {
             label="Email Address"
             type="email"
             placeholder="you@example.com"
-            value={formData.email}
+            value={localPersonal.email}
             field="email"
             icon={Mail}
           />
@@ -135,7 +121,7 @@ export default function PersonalInfoStep() {
           <InputField
             label="Website"
             placeholder="https://yourwebsite.com"
-            value={formData.website}
+            value={localPersonal.website}
             field="website"
             icon={Globe}
             required={false}
@@ -152,7 +138,7 @@ export default function PersonalInfoStep() {
           <InputField
             label="LinkedIn Profile Name"
             placeholder="John Doe"
-            value={formData.linkedin_name}
+            value={localPersonal.linkedin_name}
             field="linkedin_name"
             icon={Linkedin}
             required={false}
@@ -161,7 +147,7 @@ export default function PersonalInfoStep() {
           <InputField
             label="LinkedIn Profile URL"
             placeholder="https://linkedin.com/in/yourprofile"
-            value={formData.linkedin_url}
+            value={localPersonal.linkedin_url}
             field="linkedin_url"
             icon={Linkedin}
             required={false}
@@ -170,7 +156,7 @@ export default function PersonalInfoStep() {
           <InputField
             label="GitHub Username"
             placeholder="johndoe"
-            value={formData.github_name}
+            value={localPersonal.github_name}
             field="github_name"
             icon={Github}
             required={false}
@@ -179,7 +165,7 @@ export default function PersonalInfoStep() {
           <InputField
             label="GitHub Profile URL"
             placeholder="https://github.com/yourprofile"
-            value={formData.github_url}
+            value={localPersonal.github_url}
             field="github_url"
             icon={Github}
             required={false}
@@ -197,7 +183,7 @@ export default function PersonalInfoStep() {
             <InputField
               label="Address"
               placeholder="123 Main St, Anytown, USA"
-              value={formData.address}
+              value={localPersonal.address}
               field="address"
               icon={MapPin}
               required={false}
@@ -212,27 +198,9 @@ export default function PersonalInfoStep() {
               <div className="w-2 h-2 bg-green-700 rounded-full animate-pulse"></div>
               Step 1 of 6 - Personal Information
             </span>
-            <button 
-              onClick={() => {
-                // Validate required fields
-                if (!formData.fullname || !formData.email || !formData.phone) {
-                  alert('Please fill in all required fields');
-                  return;
-                }
-                // Validate email format
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(formData.email)) {
-                  alert('Please enter a valid email address');
-                  return;
-                }
-                // Here you can handle the form submission
-                console.log('Form data:', formData);
-                // You can also pass this data to a parent component if needed
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Save & Continue
-            </button>
+            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
+              Required fields marked with *
+            </span>
           </div>
         </div>
       </div>
