@@ -1,46 +1,17 @@
 import React from 'react';
-import { useSelector, useDispatch } from "react-redux";
-import { updatePersonal } from "../../store/resumeSlice";
 import { User, Phone, Mail, Globe, Github, Linkedin, MapPin } from 'lucide-react';
 
 export default function PersonalInfoStep() {
-  const personal = useSelector((state) => state.resume.personal);
-  const dispatch = useDispatch();
-  
-  // ✅ Use local state for immediate typing response
-  const [localPersonal, setLocalPersonal] = React.useState(personal);
-
-  // ✅ Update local state when Redux state changes (but not during typing)
-  React.useEffect(() => {
-    setLocalPersonal(personal);
-  }, [personal]);
-
-  // ✅ Handle typing - update local state immediately
-  const handleChange = (field, value) => {
-    setLocalPersonal(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // ✅ Handle blur - update Redux when user finishes typing
-  const handleBlur = (field, value) => {
-    dispatch(updatePersonal({ [field]: value }));
-  };
-
   const InputField = ({ 
     label, 
     type = "text", 
     placeholder, 
-    value, 
-    field, 
     icon: Icon,
     required = true,
   }) => (
     <div className="group">
       <label
         className="block text-sm font-semibold text-neutral-800 mb-2 transition-colors duration-200 group-focus-within:text-neutral-900"
-        htmlFor={field}
       >
         <div className="flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4 text-neutral-600" />}
@@ -50,13 +21,9 @@ export default function PersonalInfoStep() {
       </label>
       <div className="relative">
         <input
-          id={field}
           type={type}
           placeholder={placeholder}
-          value={value || ''} 
           required={required}
-          onChange={(e) => handleChange(field, e.target.value)}
-          onBlur={(e) => handleBlur(field, e.target.value)}
           className="w-full border border-gray-300 p-3 rounded-lg transition-all duration-200 
                    focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400
                    hover:border-gray-400 bg-white shadow-sm
@@ -95,8 +62,6 @@ export default function PersonalInfoStep() {
           <InputField
             label="Full Name"
             placeholder="John Doe"
-            value={localPersonal.fullname}
-            field="fullname"
             icon={User}
           />
 
@@ -104,8 +69,6 @@ export default function PersonalInfoStep() {
             label="Phone Number"
             type="tel"
             placeholder="(123) 456-7890"
-            value={localPersonal.phone}
-            field="phone"
             icon={Phone}
           />
 
@@ -113,16 +76,12 @@ export default function PersonalInfoStep() {
             label="Email Address"
             type="email"
             placeholder="you@example.com"
-            value={localPersonal.email}
-            field="email"
             icon={Mail}
           />
 
           <InputField
             label="Website"
             placeholder="https://yourwebsite.com"
-            value={localPersonal.website}
-            field="website"
             icon={Globe}
             required={false}
           />
@@ -138,8 +97,6 @@ export default function PersonalInfoStep() {
           <InputField
             label="LinkedIn Profile Name"
             placeholder="John Doe"
-            value={localPersonal.linkedin_name}
-            field="linkedin_name"
             icon={Linkedin}
             required={false}
           />
@@ -147,8 +104,6 @@ export default function PersonalInfoStep() {
           <InputField
             label="LinkedIn Profile URL"
             placeholder="https://linkedin.com/in/yourprofile"
-            value={localPersonal.linkedin_url}
-            field="linkedin_url"
             icon={Linkedin}
             required={false}
           />
@@ -156,8 +111,6 @@ export default function PersonalInfoStep() {
           <InputField
             label="GitHub Username"
             placeholder="johndoe"
-            value={localPersonal.github_name}
-            field="github_name"
             icon={Github}
             required={false}
           />
@@ -165,8 +118,6 @@ export default function PersonalInfoStep() {
           <InputField
             label="GitHub Profile URL"
             placeholder="https://github.com/yourprofile"
-            value={localPersonal.github_url}
-            field="github_url"
             icon={Github}
             required={false}
           />
@@ -183,8 +134,6 @@ export default function PersonalInfoStep() {
             <InputField
               label="Address"
               placeholder="123 Main St, Anytown, USA"
-              value={localPersonal.address}
-              field="address"
               icon={MapPin}
               required={false}
             />

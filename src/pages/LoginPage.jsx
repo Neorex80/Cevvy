@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom'; 
+import { API_URL } from '../config';
 
-// Re-usable InputField Component
+
 const InputField = ({ id, label, type, value, onChange, required, placeholder }) => (
   <div>
     <label
@@ -39,10 +40,9 @@ export default function LoginPage() {
   };
 
   const handleSubmit = async () => {
-    setMessage(''); // Clear previous messages
+    setMessage(''); 
     setMessageType('');
 
-    // Simple client-side validation
     if (!formData.email || !formData.password) {
       setMessage('Please enter both email and password.');
       setMessageType('error');
@@ -51,9 +51,7 @@ export default function LoginPage() {
 
     if (isLogin) {
       try {
-        // Simulating a backend call for login
-        // Replace 'http://localhost:2222/login' with your actual backend endpoint
-        const response = await fetch('http://localhost:2222/login', {
+        const response = await fetch(`${API_URL}/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -74,18 +72,18 @@ export default function LoginPage() {
           }
           setMessageType('error');
         } else {
-          // Handle successful login
-          const data = await response.json(); // Expect JSON for success
-          const token = data.token; // Assuming your backend returns a 'token' field
+          
+          const data = await response.json(); 
+          const token = data.token; 
           if (token) {
-            localStorage.setItem('authToken', token); // Store the token
+            localStorage.setItem('Token', token); // Store the token
             setMessage('Login successful! Welcome back.');
             setMessageType('success');
             console.log('Login successful, token received:', token);
             navigate('/build'); // Redirect to /build on successful login
           } else {
             setMessage('Login successful, but no token received.');
-            setMessageType('error'); // Or 'warning' if it's not critical
+            setMessageType('error'); 
           }
         }
       } catch (error) {

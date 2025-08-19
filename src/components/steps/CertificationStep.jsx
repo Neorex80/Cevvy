@@ -1,39 +1,27 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from "react-redux";
-import { addCertification } from "../../store/resumeSlice";
-import { Award, Building, Calendar, Plus, Trash2, Edit3, CheckCircle, ExternalLink } from 'lucide-react';
+import { Award, Building, Calendar, X, Edit2, Trash2, Plus } from 'lucide-react';
 
 export default function CertificationStep() {
-  const certifications = useSelector((state) => state.resume.certifications.certifications || []);
-  const dispatch = useDispatch();
-
-  const [form, setForm] = useState({
-    title: "",
-    issuer: "",
-    date: ""
+  const [certifications, setCertifications] = useState([]);
+  const [formData, setFormData] = useState({
+    title: '',
+    dateEarned: '',
+    issuingOrganization: '',
+    expirationDate: '',
+    credentialId: '',
+    credentialUrl: ''
   });
-
-  const handleAdd = () => {
-    if (form.title && form.issuer && form.date) {
-      dispatch(addCertification(form));
-      setForm({ title: "", issuer: "", date: "" });
-    }
-  };
-
-  const handleFormChange = (field, value) => {
-    setForm({ ...form, [field]: value });
-  };
-
-  const isFormValid = form.title && form.issuer && form.date;
+  const [editingIndex, setEditingIndex] = useState(-1);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const InputField = ({ 
     label, 
     type = "text", 
     placeholder, 
-    value, 
-    field, 
     icon: Icon,
-    required = true 
+    required = true,
+    name,
+    value
   }) => (
     <div className="group">
       <label className="block text-sm font-semibold text-neutral-800 mb-2 transition-colors duration-200 group-focus-within:text-neutral-900">
@@ -45,9 +33,10 @@ export default function CertificationStep() {
       </label>
       <input
         type={type}
-        placeholder={placeholder}
+        name={name}
         value={value}
-        onChange={(e) => handleFormChange(field, e.target.value)}
+        onChange={handleInputChange}
+        placeholder={placeholder}
         className="w-full border border-gray-300 p-3 rounded-lg transition-all duration-200 
                  focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-400
                  hover:border-gray-400 bg-white shadow-sm
@@ -56,10 +45,91 @@ export default function CertificationStep() {
     </div>
   );
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSuggestionClick = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const validateForm = () => {
+    return formData.title.trim() && formData.issuingOrganization.trim();
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+
+    const certificationData = {
+      ...formData,
+      id: Date.now(), // Simple ID generation
+      dateAdded: new Date().toISOString()
+    };
+
+    if (editingIndex >= 0) {
+      // Update existing certification
+      const updatedCertifications = [...certifications];
+      updatedCertifications[editingIndex] = certificationData;
+      setCertifications(updatedCertifications);
+      setEditingIndex(-1);
+    } else {
+      // Add new certification
+      setCertifications(prev => [...prev, certificationData]);
+    }
+
+    // Reset form
+    setFormData({
+      title: '',
+      dateEarned: '',
+      issuingOrganization: '',
+      expirationDate: '',
+      credentialId: '',
+      credentialUrl: ''
+    });
+    setShowAdvanced(false);
+  };
+
+  const handleEdit = (index) => {
+    const cert = certifications[index];
+    setFormData({
+      title: cert.title,
+      dateEarned: cert.dateEarned,
+      issuingOrganization: cert.issuingOrganization,
+      expirationDate: cert.expirationDate || '',
+      credentialId: cert.credentialId || '',
+      credentialUrl: cert.credentialUrl || ''
+    });
+    setEditingIndex(index);
+    setShowAdvanced(!!(cert.expirationDate || cert.credentialId || cert.credentialUrl));
+  };
+
+  const handleDelete = (index) => {
+    setCertifications(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      title: '',
+      dateEarned: '',
+      issuingOrganization: '',
+      expirationDate: '',
+      credentialId: '',
+      credentialUrl: ''
+    });
+    setEditingIndex(-1);
+    setShowAdvanced(false);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const [year, month] = dateString.split('-');
-    const date = new Date(year, month - 1);
+    const date = new Date(dateString + '-01'); // Add day for month input
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
   };
 
@@ -101,20 +171,20 @@ export default function CertificationStep() {
         <div className="w-24 h-1 bg-gradient-to-r from-gray-300 to-gray-400 rounded-full mx-auto mt-4"></div>
       </div>
 
-      {/* Add Certification Form */}
+      {/* Add/Edit Certification Form */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
         <h3 className="text-lg font-semibold text-neutral-800 mb-6 flex items-center gap-2 border-b border-gray-200 pb-2">
-          <Plus className="w-5 h-5 text-neutral-600" />
-          Add New Certification
+          <Award className="w-5 h-5 text-neutral-600" />
+          {editingIndex >= 0 ? 'Edit Certification' : 'Add New Certification'}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
             <InputField
               label="Certification Title"
+              name="title"
+              value={formData.title}
               placeholder="AWS Certified Solutions Architect"
-              value={form.title}
-              field="title"
               icon={Award}
             />
             {/* Certification suggestions */}
@@ -124,7 +194,8 @@ export default function CertificationStep() {
                 {popularCertifications.slice(0, 4).map((cert, index) => (
                   <button
                     key={index}
-                    onClick={() => handleFormChange('title', cert)}
+                    type="button"
+                    onClick={() => handleSuggestionClick('title', cert)}
                     className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-neutral-600 rounded-full transition-colors duration-200"
                   >
                     {cert}
@@ -136,10 +207,10 @@ export default function CertificationStep() {
 
           <InputField
             label="Date Earned"
+            name="dateEarned"
+            value={formData.dateEarned}
             type="month"
             placeholder="Date Earned"
-            value={form.date}
-            field="date"
             icon={Calendar}
           />
         </div>
@@ -147,9 +218,9 @@ export default function CertificationStep() {
         <div className="mt-6">
           <InputField
             label="Issuing Organization"
+            name="issuingOrganization"
+            value={formData.issuingOrganization}
             placeholder="Amazon Web Services (AWS)"
-            value={form.issuer}
-            field="issuer"
             icon={Building}
           />
           {/* Issuer suggestions */}
@@ -159,7 +230,8 @@ export default function CertificationStep() {
               {popularIssuers.slice(0, 6).map((issuer, index) => (
                 <button
                   key={index}
-                  onClick={() => handleFormChange('issuer', issuer)}
+                  type="button"
+                  onClick={() => handleSuggestionClick('issuingOrganization', issuer)}
                   className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 text-neutral-600 rounded-full transition-colors duration-200"
                 >
                   {issuer}
@@ -169,74 +241,131 @@ export default function CertificationStep() {
           </div>
         </div>
 
-        <div className="mt-8 flex justify-end">
-          <button 
-            onClick={handleAdd}
-            disabled={!isFormValid}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium shadow-sm transition-all duration-200 ${
-              isFormValid 
-                ? 'bg-neutral-800 text-white hover:bg-neutral-700 hover:shadow-md transform hover:scale-105' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+        {/* Advanced Fields Toggle */}
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-800 transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Add Certification
+            <Plus className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-45' : ''}`} />
+            {showAdvanced ? 'Hide' : 'Show'} additional fields
           </button>
+        </div>
+
+        {/* Advanced Fields */}
+        {showAdvanced && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField
+                label="Expiration Date"
+                name="expirationDate"
+                value={formData.expirationDate}
+                type="month"
+                placeholder="Expiration Date (if applicable)"
+                icon={Calendar}
+                required={false}
+              />
+              <InputField
+                label="Credential ID"
+                name="credentialId"
+                value={formData.credentialId}
+                placeholder="Certificate number or ID"
+                required={false}
+              />
+            </div>
+            <div className="mt-6">
+              <InputField
+                label="Credential URL"
+                name="credentialUrl"
+                value={formData.credentialUrl}
+                type="url"
+                placeholder="https://www.example.com/verify/certificate"
+                required={false}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Form Actions */}
+        <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+          <button
+            onClick={handleSubmit}
+            disabled={!validateForm()}
+            className="bg-neutral-800 text-white px-6 py-2 rounded-lg hover:bg-neutral-900 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <Award className="w-4 h-4" />
+            {editingIndex >= 0 ? 'Update Certification' : 'Add Certification'}
+          </button>
+          {editingIndex >= 0 && (
+            <button
+              onClick={handleCancel}
+              className="border border-gray-300 text-neutral-600 px-6 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </div>
 
       {/* Certifications List */}
-      {certifications.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+      {certifications.length > 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
           <h3 className="text-lg font-semibold text-neutral-800 mb-6 flex items-center gap-2 border-b border-gray-200 pb-2">
             <Award className="w-5 h-5 text-neutral-600" />
             Your Certifications ({certifications.length})
           </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {certifications.map((cert, index) => (
-              <div key={index} className="group bg-gray-50 border border-gray-200 rounded-lg p-6 transition-all duration-200 hover:shadow-md hover:border-gray-300">
+              <div key={cert.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mt-1">
-                        <Award className="w-5 h-5 text-neutral-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-lg font-semibold text-neutral-900 mb-2 leading-tight">
-                          {cert.title}
-                        </h4>
-                        
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm text-neutral-600">
-                            <Building className="w-4 h-4 text-neutral-500" />
-                            <span className="font-medium">{cert.issuer}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-sm text-neutral-600">
-                            <Calendar className="w-4 h-4 text-neutral-500" />
-                            <span>Earned {formatDate(cert.date)}</span>
-                          </div>
-
-                          {/* Certification status */}
-                          <div className="flex items-center gap-2 mt-3">
-                            <CheckCircle className="w-4 h-4 text-green-600" />
-                            <span className="text-sm text-green-700 font-medium">Certified</span>
-                          </div>
-                        </div>
-                      </div>
+                    <h4 className="font-semibold text-neutral-800 text-lg mb-1">{cert.title}</h4>
+                    <p className="text-neutral-600 mb-2 flex items-center gap-2">
+                      <Building className="w-4 h-4" />
+                      {cert.issuingOrganization}
+                    </p>
+                    <div className="flex flex-wrap gap-4 text-sm text-neutral-500">
+                      {cert.dateEarned && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Earned: {formatDate(cert.dateEarned)}
+                        </span>
+                      )}
+                      {cert.expirationDate && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          Expires: {formatDate(cert.expirationDate)}
+                        </span>
+                      )}
+                      {cert.credentialId && (
+                        <span>ID: {cert.credentialId}</span>
+                      )}
                     </div>
+                    {cert.credentialUrl && (
+                      <a
+                        href={cert.credentialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-2 text-blue-600 hover:text-blue-800 text-sm underline"
+                      >
+                        View Certificate
+                      </a>
+                    )}
                   </div>
-                  
-                  {/* Action buttons */}
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-white rounded-full transition-colors duration-200">
-                      <ExternalLink className="w-4 h-4" />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-gray-100 rounded-lg transition-colors"
+                      title="Edit certification"
+                    >
+                      <Edit2 className="w-4 h-4" />
                     </button>
-                    <button className="p-2 text-neutral-500 hover:text-neutral-700 hover:bg-white rounded-full transition-colors duration-200">
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button className="p-2 text-neutral-500 hover:text-red-600 hover:bg-white rounded-full transition-colors duration-200">
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete certification"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -245,16 +374,14 @@ export default function CertificationStep() {
             ))}
           </div>
         </div>
-      )}
-
-      {/* Empty State */}
-      {certifications.length === 0 && (
+      ) : (
+        /* Empty State */
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Award className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-lg font-medium text-neutral-700 mb-2">No certifications added yet</h3>
-          <p className="text-neutral-500 mb-6">Add your first certification using the form above.</p>
+          <h3 className="text-lg font-medium text-neutral-700 mb-2">Add your certifications</h3>
+          <p className="text-neutral-500 mb-6">Fill out the form above to add your certifications.</p>
           <div className="text-sm text-neutral-400">
             <p>Include professional certifications, licenses, and credentials</p>
           </div>
@@ -289,6 +416,7 @@ export default function CertificationStep() {
               <li>• AWS Certifications</li>
               <li>• Google Cloud</li>
               <li>• Microsoft Azure</li>
+              <li>• Kubernetes</li>
             </ul>
           </div>
           <div>
@@ -297,6 +425,7 @@ export default function CertificationStep() {
               <li>• CompTIA Security+</li>
               <li>• CISSP</li>
               <li>• CEH</li>
+              <li>• CISM</li>
             </ul>
           </div>
           <div>
@@ -304,69 +433,20 @@ export default function CertificationStep() {
             <ul className="text-neutral-600 space-y-1">
               <li>• PMP</li>
               <li>• Scrum Master</li>
-              <li>• ITIL</li>
+              <li>• PRINCE2</li>
+              <li>• Agile</li>
             </ul>
           </div>
           <div>
-            <h5 className="font-medium text-neutral-700 mb-2">Data & Analytics</h5>
+            <h5 className="font-medium text-neutral-700 mb-2">Development</h5>
             <ul className="text-neutral-600 space-y-1">
-              <li>• Google Analytics</li>
-              <li>• Tableau</li>
-              <li>• Power BI</li>
+              <li>• Oracle Java</li>
+              <li>• MongoDB</li>
+              <li>• Salesforce</li>
+              <li>• Adobe Certified</li>
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* Progress Indicator */}
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <div className="flex items-center justify-between text-sm text-neutral-600">
-          <span className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-700 rounded-full animate-pulse"></div>
-            Optional Step - Certifications
-          </span>
-          <span className="text-xs bg-gray-100 px-3 py-1 rounded-full">
-            {certifications.length} certification{certifications.length !== 1 ? 's' : ''} added
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Demo wrapper
-function Demo() {
-  const mockCertifications = [
-    {
-      title: "AWS Certified Solutions Architect - Associate",
-      issuer: "Amazon Web Services (AWS)",
-      date: "2023-08"
-    },
-    {
-      title: "Google Cloud Professional Cloud Architect",
-      issuer: "Google Cloud",
-      date: "2023-05"
-    },
-    {
-      title: "Microsoft Azure Fundamentals",
-      issuer: "Microsoft",
-      date: "2023-03"
-    }
-  ];
-
-  const mockDispatch = (action) => {
-    console.log('Dispatched:', action);
-  };
-
-  React.useEffect(() => {
-    window.mockUseSelector = () => ({ certifications: { certifications: mockCertifications } });
-    window.mockUseDispatch = () => mockDispatch;
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <CertificationStep />
       </div>
     </div>
   );

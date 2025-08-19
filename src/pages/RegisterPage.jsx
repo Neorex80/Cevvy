@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Briefcase } from 'lucide-react';
+import { API_URL } from '../config';
 
 function InputField({ id, label, type, value, onChange, required, placeholder }) {
   return (
@@ -42,7 +43,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:2222/register', {
+      const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
