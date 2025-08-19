@@ -12,7 +12,7 @@ export default function Hero() {
           Land your dream job with a resume that stands out.
         </p>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors duration-200">
-          Build My Resume
+          <a href="/build">Build My Resume</a>
         </button>
         <div className="mt-12">
           <video

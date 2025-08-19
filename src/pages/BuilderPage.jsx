@@ -886,28 +886,28 @@ export default function BuilderPage() {
             </div>
             
             {/* Card Footer with Navigation */}
-            <div className="bg-gray-50 border-t border-gray-200 px-8 py-6">
-              <div className="flex justify-between items-center">
-                <div>
+            <div className="bg-gray-50 border-t border-gray-200 px-4 sm:px-8 py-4 sm:py-6">
+              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0">
+                <div className="w-full sm:w-auto">
                   {currentStep > 1 && (
                     <button
                       type="button"
                       onClick={prevStep}
-                      className="group flex items-center gap-3 px-6 py-3 border-2 border-gray-300 rounded-xl hover:border-gray-400 hover:bg-white transition-all duration-200 font-medium text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
-                    >
+                      className="w-full sm:w-auto group flex justify-center sm:justify-start items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl hover:border-gray-400 hover:bg-white transition-all duration-200 font-medium text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm sm:text-base"
+                      >
                       <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
                       Previous Step
                     </button>
                   )}
                 </div>
-                
-                <div>
+
+                <div className="">
                   {currentStep < steps.length ? (
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="group flex items-center gap-3 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-200"
-                    >
+                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-200 text-sm sm:text-base"
+                      >
                       Next Step
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </button>
@@ -915,8 +915,8 @@ export default function BuilderPage() {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      className="group flex items-center gap-3 px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-green-200"
-                    >
+                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg sm:rounded-xl hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-green-200 text-sm sm:text-base"
+                      >
                       Finish & Save
                       <Check className="h-5 w-5 transition-transform group-hover:scale-110" />
                     </button>
