@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext } from "react";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { API_URL } from "../config";
 
 // Context for form data management
@@ -802,49 +802,60 @@ export default function BuilderPage() {
   };
 
   const handleSubmit = async () => {
-  setIsSubmitting(true);
-  try {
+    setIsSubmitting(true);
     const token = localStorage.getItem('Token');
-    const response = await fetch(`${API_URL}/resume`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`    
-      },
-      body: JSON.stringify(formData)
-    });
 
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-
-      // Set link attributes for download
-      link.href = url;
-      link.download = 'resume.pdf'; 
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
+    if (!token) {
       setToast({
-        title: "Success!",
-        description: "Your resume has been generated and is downloading."
+        title: "Error",
+        description: "You must be logged in to create a resume."
       });
-    } else {
-      throw new Error('Failed to submit resume');
+      setIsSubmitting(false);
+      setTimeout(() => setToast(null), 3000);
+      return;
     }
-  } catch (err) {
-    setToast({
-      title: "Error",
-      description: "Failed to submit resume. Please try again."
-    });
-    console.error(err);
-  } finally {
-    setIsSubmitting(false);
-    setTimeout(() => setToast(null), 3000);
-  }
-};
+
+    try {
+      const response = await fetch(`${API_URL}/resume`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`    
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.download = 'resume.pdf'; 
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        setToast({
+          title: "Success!",
+          description: "Your resume has been generated and is downloading."
+        });
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit resume');
+      }
+    } catch (err) {
+      setToast({
+        title: "Error",
+        description: err.message || "Failed to submit resume. Please try again."
+      });
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setToast(null), 3000);
+    }
+  };
 
   const CurrentStepComponent = steps[currentStep - 1].component;
 
@@ -893,7 +904,8 @@ export default function BuilderPage() {
                     <button
                       type="button"
                       onClick={prevStep}
-                      className="w-full sm:w-auto group flex justify-center sm:justify-start items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl hover:border-gray-400 hover:bg-white transition-all duration-200 font-medium text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm sm:text-base"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto group flex justify-center sm:justify-start items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl hover:border-gray-400 hover:bg-white transition-all duration-200 font-medium text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                       <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
                       Previous Step
@@ -906,7 +918,8 @@ export default function BuilderPage() {
                     <button
                       type="button"
                       onClick={nextStep}
-                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-200 text-sm sm:text-base"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg sm:rounded-xl hover:bg-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-blue-200 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                       Next Step
                       <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -915,10 +928,20 @@ export default function BuilderPage() {
                     <button
                       type="button"
                       onClick={handleSubmit}
-                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg sm:rounded-xl hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-green-200 text-sm sm:text-base"
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto group flex justify-center sm:justify-end items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-3 bg-green-600 text-white rounded-lg sm:rounded-xl hover:bg-green-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-4 focus:ring-green-200 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                      Finish & Save
-                      <Check className="h-5 w-5 transition-transform group-hover:scale-110" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          Finish & Save
+                          <Check className="h-5 w-5 transition-transform group-hover:scale-110" />
+                        </>
+                      )}
                     </button>
                   )}
                 </div>
