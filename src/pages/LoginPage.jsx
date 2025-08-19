@@ -19,7 +19,7 @@ const InputField = ({ id, label, type, value, onChange, required, placeholder })
       value={value}
       onChange={onChange}
       required={required}
-      className="w-full px-3 py-2 border border-gray-300 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors rounded-md"
+      className="block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
     />
   </div>
 );
@@ -112,7 +112,7 @@ export default function LoginPage() {
       {/* Logo */}
       <div className="flex items-center space-x-2 mb-8 cursor-pointer">
         <Briefcase className="h-8 w-8 text-blue-600" />
-        <span className="text-2xl font-bold text-gray-900">ResumeFlow</span>
+        <span className="text-2xl font-bold text-gray-900">Resume-Craft</span>
       </div>
 
       {/* Login Card */}

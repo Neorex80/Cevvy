@@ -78,7 +78,7 @@ export default function RegisterPage() {
       <div className="flex items-center space-x-2 mb-8 cursor-pointer">
         <Briefcase className="h-8 w-8 text-blue-600" />
         <span className="text-2xl font-bold text-gray-900">
-          ResumeFlow
+          ResumeCraft
         </span>
       </div>
 

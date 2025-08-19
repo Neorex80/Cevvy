@@ -1,3 +1,5 @@
+import videoSrc from "../asstes/video.mp4"
+
 export default function Hero() {
   return (
     <section className="py-20 md:py-32">
@@ -13,13 +15,17 @@ export default function Hero() {
           Build My Resume
         </button>
         <div className="mt-12">
-          <img
-            src="https://placehold.co/1200x600.png"
-            alt="ResumeFlow dashboard preview"
+          <video
+            src={videoSrc}
             width={1200}
             height={600}
             className="rounded-lg shadow-2xl mx-auto max-w-full h-auto"
-          />
+            autoPlay
+            loop
+            muted // Added to prevent audio from auto-playing
+          >
+            Your browser does not support the video tag.
+          </video>
         </div>
       </div>
     </section>
