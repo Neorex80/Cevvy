@@ -17,7 +17,7 @@ export default function Footer() {
           {/* Right Section - Social & Copyright */}
           <div className="flex items-center gap-6">
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} ResumeFlow
+              © {new Date().getFullYear()} ResumeCraft
             </p>
             
             {/* Social Links */}
