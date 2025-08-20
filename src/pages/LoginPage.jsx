@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Briefcase } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
-
 
 const InputField = ({ id, label, type, value, onChange, required, placeholder }) => (
   <div>
@@ -32,66 +31,84 @@ export default function LoginPage() {
   });
   const [message, setMessage] = useState(''); // Unified state for success/error messages
   const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  const [showAdLoader, setShowAdLoader] = useState(false); // New state for ad loader
+  const [isSubmitting, setIsSubmitting] = useState(false); // To disable button during submission/ad loading
+
+  const navigate = useNavigate(); // Uncomment and initialize if using react-router-dom
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [id]: value }));
   };
 
-  const handleSubmit = async () => {
-    setMessage(''); 
+  const performAuthAction = async () => {
+    setMessage('');
     setMessageType('');
+    setIsSubmitting(true); // Disable button
 
     if (!formData.email || !formData.password) {
       setMessage('Please enter both email and password.');
       setMessageType('error');
+      setIsSubmitting(false); // Re-enable button
       return;
     }
 
-    if (isLogin) {
-      try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password,
-          }),
-        });
+    // Simulate API call
+    try {
+      const endpoint = isLogin ? `${API_URL}/login` : `${API_URL}/register`;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-        if (!response.ok) {
-          
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            setMessage(errorData.message || 'Login failed. Please check your credentials.');
-          } else {
-            const errorText = await response.text();
-            setMessage(errorText || 'Login failed due to an unknown error.');
-          }
-          setMessageType('error');
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          setMessage(errorData.message || `${isLogin ? 'Login' : 'Registration'} failed. Please check your credentials.`);
         } else {
-          
-          const data = await response.json(); 
-          const token = data.token; 
-          if (token) {
-            localStorage.setItem('Token', token); // Store the token
-            setMessage('Login successful! Welcome back.');
-            setMessageType('success');
-            console.log('Login successful, token received:', token);
-            navigate('/build'); // Redirect to /build on successful login
-          } else {
-            setMessage('Login successful, but no token received.');
-            setMessageType('error'); 
-          }
+          const errorText = await response.text();
+          setMessage(errorText || `${isLogin ? 'Login' : 'Registration'} failed due to an unknown error.`);
         }
-      } catch (error) {
-        console.error('Login error:', error);
-        setMessage('Failed to connect to the server. Please try again later.');
         setMessageType('error');
+      } else {
+        const data = await response.json();
+        const token = data.token;
+        if (token) {
+          localStorage.setItem('Token', token); // Store the token
+          setMessage(`${isLogin ? 'Login' : 'Registration'} successful!`);
+          setMessageType('success');
+          console.log(`${isLogin ? 'Login' : 'Registration'} successful, token received:`, token);
+          navigate('/build'); 
+        } else {
+          setMessage(`${isLogin ? 'Login' : 'Registration'} successful, but no token received.`);
+          setMessageType('error');
+        }
       }
-    } 
+    } catch (error) {
+      console.error(`${isLogin ? 'Login' : 'Registration'} error:`, error);
+      setMessage('Failed to connect to the server. Please try again later.');
+      setMessageType('error');
+    } finally {
+      setIsSubmitting(false); // Re-enable button after API call
+    }
+  };
+
+  const handleAdLoadAndSubmit = () => {
+    setMessage('');
+    setMessageType('');
+    setShowAdLoader(true); // Show ad loader
+    setIsSubmitting(true); // Disable button while ad is loading
+
+    // Simulate ad loading for 2 seconds
+    setTimeout(() => {
+      setShowAdLoader(false); // Hide ad loader
+      performAuthAction(); // Proceed with login/registration after ad
+    }, 2000); // 2-second delay
   };
 
   const toggleMode = () => {
@@ -103,6 +120,8 @@ export default function LoginPage() {
     });
     setMessage('');
     setMessageType('');
+    setShowAdLoader(false); // Hide ad loader if switching modes
+    setIsSubmitting(false); // Ensure button is enabled
   };
 
   const messageClass = messageType === 'error' ? 'text-red-600' : 'text-green-600';
@@ -164,16 +183,25 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
 
+            {/* Ad Loader Display */}
+            {showAdLoader && (
+              <div className="flex items-center justify-center py-4 bg-gray-100 rounded-md">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <p className="ml-3 text-sm font-medium text-gray-700">Sign in ...</p>
+              </div>
+            )}
+
             {/* Display message here */}
             {message && (
               <p className={`text-sm font-medium ${messageClass}`}>{message}</p>
             )}
 
             <button
-              onClick={handleSubmit}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={handleAdLoadAndSubmit} 
+              disabled={isSubmitting} 
+              className={`w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             >
-              {isLogin ? 'Sign in' : 'Create Account'}
+              {isSubmitting ? 'Loading...' : (isLogin ? 'Sign in' : 'Create Account')}
             </button>
           </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Briefcase } from 'lucide-react';
+
 import { API_URL } from '../config';
 
 function InputField({ id, label, type, value, onChange, required, placeholder }) {
@@ -28,10 +29,10 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [showAdLoader, setShowAdLoader] = useState(false); // New state for ad loader
+  const [isLoading, setIsLoading] = useState(false); // To disable button during submission/ad loading
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const performRegistrationAction = async () => {
     setErrorMessage('');
     setSuccessMessage('');
     setIsLoading(true);
@@ -51,7 +52,14 @@ export default function RegisterPage() {
         body: JSON.stringify({ email, password, name: fullName }),
       });
 
-      const data = await response.text();
+      // Attempt to parse JSON first, then fall back to text if it's not JSON
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
 
       if (response.ok) {
         setSuccessMessage('Registration successful! You can now sign in.');
@@ -61,7 +69,8 @@ export default function RegisterPage() {
         setFullName('');
         setConfirmPassword('');
       } else {
-        setErrorMessage(data.message || 'Registration failed. Please try again.');
+        // Use data.message if available, otherwise use the raw data or a generic message
+        setErrorMessage(data.message || data || 'Registration failed. Please try again.');
         console.log('Registration failed:', data);
       }
     } catch (error) {
@@ -72,8 +81,22 @@ export default function RegisterPage() {
     }
   };
 
+  const handleAdLoadAndSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission
+    setErrorMessage('');
+    setSuccessMessage('');
+    setShowAdLoader(true); // Show ad loader
+    setIsLoading(true); // Disable button while ad is loading
+
+    // Simulate ad loading for 2 seconds
+    setTimeout(() => {
+      setShowAdLoader(false); // Hide ad loader
+      performRegistrationAction(); // Proceed with registration after ad
+    }, 2000); // 2-second delay
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 font-['Inter']">
       {/* Logo */}
       <div className="flex items-center space-x-2 mb-8 cursor-pointer">
         <Briefcase className="h-8 w-8 text-blue-600" />
@@ -108,7 +131,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleAdLoadAndSubmit} className="space-y-4"> {/* Call new handler here */}
             {/* Display Messages */}
             {successMessage && (
               <div className="p-3 text-sm text-green-700 bg-green-100 rounded-md">
@@ -121,6 +144,14 @@ export default function RegisterPage() {
               </div>
             )}
 
+            {/* Ad Loader Display */}
+            {showAdLoader && (
+              <div className="flex items-center justify-center py-4 bg-gray-100 rounded-md">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <p className="ml-3 text-sm font-medium text-gray-700">Loading Ad...</p>
+              </div>
+            )}
+
             <InputField
               id="email"
               label="Email"
@@ -130,48 +161,48 @@ export default function RegisterPage() {
               required
               placeholder="m@example.com"
             />
-           
-           <InputField
-           id="full-name"
-           label="Full name"
-           type="text"
-           value={fullName}
-           onChange={(e) => setFullName(e.target.value)}
-           required
-           placeholder="John Doe"
-           />
-           <InputField
-           id="password"
-           label="Password"
-           type="password"
-           value={password}
-           onChange={(e) => setPassword(e.target.value)}
-           required
-           placeholder="••••••••"
-           />
-            
+
             <InputField
-           id="confirm-password"
-           label="Confirm Password"
-           type="password"
-           value={confirmPassword}
-           onChange={(e) => setConfirmPassword(e.target.value)}
-           required
-           placeholder="••••••••"
-           />
+              id="full-name"
+              label="Full name"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              placeholder="John Doe"
+            />
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
+
+            <InputField
+              id="confirm-password"
+              label="Confirm Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={isLoading} /* Disable button when submitting or ad loading */
+              className={`w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             >
-              {isLoading ? 'Creating...' : 'Create Account'}
+              {isLoading ? 'Loading...' : 'Create Account'}
             </button>
           </form>
 
           {/* Sign in link */}
           <div className="mt-4 text-center text-sm text-gray-600">
             Already have an account?{" "}
-            <a href="/auth/login" className="text-blue-600 hover:text-blue-700 underline">
+            <a href="/login" className="text-blue-600 hover:text-blue-700 underline">
               Sign in
             </a>
           </div>
